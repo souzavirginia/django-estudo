@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +26,26 @@ SECRET_KEY = "django-insecure-d2y#5z1jf%(yst_v5^rw4#%-*24l9g=hh*b5c(=oa_v(f79xc*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+codespace_name = os.environ.get("CODESPACE_NAME")
+codespace_domain = os.environ.get(
+    "GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN", "app.github.dev"
+)
+codespace_host = (
+    f"{codespace_name}-8000.{codespace_domain}" if codespace_name else None
+)
+
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+CSRF_TRUSTED_ORIGINS = []
+
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS.extend(
+        ["http://localhost:8000", "https://localhost:8000"]
+    )
+
+if codespace_host:
+    ALLOWED_HOSTS.append(codespace_host)
+    CSRF_TRUSTED_ORIGINS.append(f"https://{codespace_host}")
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 
 # Application definition
@@ -116,6 +136,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = "static/"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 
 # Email
